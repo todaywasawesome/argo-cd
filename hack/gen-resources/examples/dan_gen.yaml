@@ -1,0 +1,23 @@
+application:
+  samples: 2000
+  source:
+    strategy: Random
+  destination:
+    strategy: Random
+
+
+cluster:
+  samples: 1
+  namespacePrefix: vcluster
+  valuesFilePath: /Users/dan/Github/argoproj/argo-cd/hack/gen-resources/examples/dan_values.yaml
+  destinationNamespace: argocd
+  clusterNamePrefix: test
+  parallel: 1
+
+repository:
+  samples: 50
+
+project:
+  samples: 50
+
+namespace: argocd
