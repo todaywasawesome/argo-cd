@@ -537,6 +537,12 @@ spec:
                         description: RepoURL is the URL to the repository (Git or
                           Helm) that contains the application manifests
                         type: string
+                      sparsePaths:
+                        description: SparsePaths defines the list of paths to be used
+                          for git sparse checkout. Only valid for Git repositories.
+                        items:
+                          type: string
+                        type: array
                       targetRevision:
                         description: |-
                           TargetRevision defines the revision of the source to sync the application to.
@@ -926,6 +932,12 @@ spec:
                           description: RepoURL is the URL to the repository (Git or
                             Helm) that contains the application manifests
                           type: string
+                        sparsePaths:
+                          description: SparsePaths defines the list of paths to be
+                            used for git sparse checkout. Only valid for Git repositories.
+                          items:
+                            type: string
+                          type: array
                         targetRevision:
                           description: |-
                             TargetRevision defines the revision of the source to sync the application to.
@@ -1421,6 +1433,12 @@ spec:
                     description: RepoURL is the URL to the repository (Git or Helm)
                       that contains the application manifests
                     type: string
+                  sparsePaths:
+                    description: SparsePaths defines the list of paths to be used
+                      for git sparse checkout. Only valid for Git repositories.
+                    items:
+                      type: string
+                    type: array
                   targetRevision:
                     description: |-
                       TargetRevision defines the revision of the source to sync the application to.
@@ -1861,6 +1879,12 @@ spec:
                       description: RepoURL is the URL to the repository (Git or Helm)
                         that contains the application manifests
                       type: string
+                    sparsePaths:
+                      description: SparsePaths defines the list of paths to be used
+                        for git sparse checkout. Only valid for Git repositories.
+                      items:
+                        type: string
+                      type: array
                     targetRevision:
                       description: |-
                         TargetRevision defines the revision of the source to sync the application to.
@@ -2412,6 +2436,12 @@ spec:
                           description: RepoURL is the URL to the repository (Git or
                             Helm) that contains the application manifests
                           type: string
+                        sparsePaths:
+                          description: SparsePaths defines the list of paths to be
+                            used for git sparse checkout. Only valid for Git repositories.
+                          items:
+                            type: string
+                          type: array
                         targetRevision:
                           description: |-
                             TargetRevision defines the revision of the source to sync the application to.
@@ -2808,6 +2838,13 @@ spec:
                             description: RepoURL is the URL to the repository (Git
                               or Helm) that contains the application manifests
                             type: string
+                          sparsePaths:
+                            description: SparsePaths defines the list of paths to
+                              be used for git sparse checkout. Only valid for Git
+                              repositories.
+                            items:
+                              type: string
+                            type: array
                           targetRevision:
                             description: |-
                               TargetRevision defines the revision of the source to sync the application to.
@@ -3353,6 +3390,13 @@ spec:
                                 description: RepoURL is the URL to the repository
                                   (Git or Helm) that contains the application manifests
                                 type: string
+                              sparsePaths:
+                                description: SparsePaths defines the list of paths
+                                  to be used for git sparse checkout. Only valid for
+                                  Git repositories.
+                                items:
+                                  type: string
+                                type: array
                               targetRevision:
                                 description: |-
                                   TargetRevision defines the revision of the source to sync the application to.
@@ -3768,6 +3812,13 @@ spec:
                                   description: RepoURL is the URL to the repository
                                     (Git or Helm) that contains the application manifests
                                   type: string
+                                sparsePaths:
+                                  description: SparsePaths defines the list of paths
+                                    to be used for git sparse checkout. Only valid
+                                    for Git repositories.
+                                  items:
+                                    type: string
+                                  type: array
                                 targetRevision:
                                   description: |-
                                     TargetRevision defines the revision of the source to sync the application to.
@@ -4288,6 +4339,13 @@ spec:
                             description: RepoURL is the URL to the repository (Git
                               or Helm) that contains the application manifests
                             type: string
+                          sparsePaths:
+                            description: SparsePaths defines the list of paths to
+                              be used for git sparse checkout. Only valid for Git
+                              repositories.
+                            items:
+                              type: string
+                            type: array
                           targetRevision:
                             description: |-
                               TargetRevision defines the revision of the source to sync the application to.
@@ -4693,6 +4751,13 @@ spec:
                               description: RepoURL is the URL to the repository (Git
                                 or Helm) that contains the application manifests
                               type: string
+                            sparsePaths:
+                              description: SparsePaths defines the list of paths to
+                                be used for git sparse checkout. Only valid for Git
+                                repositories.
+                              items:
+                                type: string
+                              type: array
                             targetRevision:
                               description: |-
                                 TargetRevision defines the revision of the source to sync the application to.
@@ -5434,6 +5499,13 @@ spec:
                             description: RepoURL is the URL to the repository (Git
                               or Helm) that contains the application manifests
                             type: string
+                          sparsePaths:
+                            description: SparsePaths defines the list of paths to
+                              be used for git sparse checkout. Only valid for Git
+                              repositories.
+                            items:
+                              type: string
+                            type: array
                           targetRevision:
                             description: |-
                               TargetRevision defines the revision of the source to sync the application to.
@@ -5839,6 +5911,13 @@ spec:
                               description: RepoURL is the URL to the repository (Git
                                 or Helm) that contains the application manifests
                               type: string
+                            sparsePaths:
+                              description: SparsePaths defines the list of paths to
+                                be used for git sparse checkout. Only valid for Git
+                                repositories.
+                              items:
+                                type: string
+                              type: array
                             targetRevision:
                               description: |-
                                 TargetRevision defines the revision of the source to sync the application to.

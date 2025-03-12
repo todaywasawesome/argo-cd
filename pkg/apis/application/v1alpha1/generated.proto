@@ -459,6 +459,9 @@ message ApplicationSource {
 
   // Name is used to refer to a source and is displayed in the UI. It is used in multi-source Applications.
   optional string name = 14;
+
+  // SparsePaths defines the list of paths to be used for git sparse checkout. Only valid for Git repositories.
+  repeated string sparsePaths = 15;
 }
 
 // ApplicationSourceDirectory holds options for applications of type plain YAML or Jsonnet

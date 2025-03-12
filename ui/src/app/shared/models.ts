@@ -212,6 +212,11 @@ export interface ApplicationSource {
     ref?: string;
 
     name?: string;
+
+    /**
+     * SparsePaths defines the list of paths to be used for git sparse checkout. Only valid for Git repositories.
+     */
+    sparsePaths?: string[];
 }
 
 export interface SourceHydrator {

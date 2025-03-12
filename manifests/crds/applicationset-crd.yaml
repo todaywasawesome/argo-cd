@@ -379,6 +379,10 @@ spec:
                                       type: string
                                     repoURL:
                                       type: string
+                                    sparsePaths:
+                                      items:
+                                        type: string
+                                      type: array
                                     targetRevision:
                                       type: string
                                   required:
@@ -655,6 +659,10 @@ spec:
                                         type: string
                                       repoURL:
                                         type: string
+                                      sparsePaths:
+                                        items:
+                                          type: string
+                                        type: array
                                       targetRevision:
                                         type: string
                                     required:
@@ -1059,6 +1067,10 @@ spec:
                                       type: string
                                     repoURL:
                                       type: string
+                                    sparsePaths:
+                                      items:
+                                        type: string
+                                      type: array
                                     targetRevision:
                                       type: string
                                   required:
@@ -1335,6 +1347,10 @@ spec:
                                         type: string
                                       repoURL:
                                         type: string
+                                      sparsePaths:
+                                        items:
+                                          type: string
+                                        type: array
                                       targetRevision:
                                         type: string
                                     required:
@@ -1738,6 +1754,10 @@ spec:
                                       type: string
                                     repoURL:
                                       type: string
+                                    sparsePaths:
+                                      items:
+                                        type: string
+                                      type: array
                                     targetRevision:
                                       type: string
                                   required:
@@ -2014,6 +2034,10 @@ spec:
                                         type: string
                                       repoURL:
                                         type: string
+                                      sparsePaths:
+                                        items:
+                                          type: string
+                                        type: array
                                       targetRevision:
                                         type: string
                                     required:
@@ -2397,6 +2421,10 @@ spec:
                                       type: string
                                     repoURL:
                                       type: string
+                                    sparsePaths:
+                                      items:
+                                        type: string
+                                      type: array
                                     targetRevision:
                                       type: string
                                   required:
@@ -2673,6 +2701,10 @@ spec:
                                         type: string
                                       repoURL:
                                         type: string
+                                      sparsePaths:
+                                        items:
+                                          type: string
+                                        type: array
                                       targetRevision:
                                         type: string
                                     required:
@@ -3081,6 +3113,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -3357,6 +3393,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -3761,6 +3801,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -4037,6 +4081,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -4440,6 +4488,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -4716,6 +4768,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -5099,6 +5155,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -5375,6 +5435,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -5766,6 +5830,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -6042,6 +6110,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -6652,6 +6724,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -6928,6 +7004,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -7533,6 +7613,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -7809,6 +7893,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -8209,6 +8297,10 @@ spec:
                                       type: string
                                     repoURL:
                                       type: string
+                                    sparsePaths:
+                                      items:
+                                        type: string
+                                      type: array
                                     targetRevision:
                                       type: string
                                   required:
@@ -8485,6 +8577,10 @@ spec:
                                         type: string
                                       repoURL:
                                         type: string
+                                      sparsePaths:
+                                        items:
+                                          type: string
+                                        type: array
                                       targetRevision:
                                         type: string
                                     required:
@@ -8895,6 +8991,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -9171,6 +9271,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -9575,6 +9679,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -9851,6 +9959,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -10254,6 +10366,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -10530,6 +10646,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -10913,6 +11033,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -11189,6 +11313,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -11580,6 +11708,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -11856,6 +11988,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -12466,6 +12602,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -12742,6 +12882,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -13347,6 +13491,10 @@ spec:
                                                 type: string
                                               repoURL:
                                                 type: string
+                                              sparsePaths:
+                                                items:
+                                                  type: string
+                                                type: array
                                               targetRevision:
                                                 type: string
                                             required:
@@ -13623,6 +13771,10 @@ spec:
                                                   type: string
                                                 repoURL:
                                                   type: string
+                                                sparsePaths:
+                                                  items:
+                                                    type: string
+                                                  type: array
                                                 targetRevision:
                                                   type: string
                                               required:
@@ -14027,6 +14179,10 @@ spec:
                                       type: string
                                     repoURL:
                                       type: string
+                                    sparsePaths:
+                                      items:
+                                        type: string
+                                      type: array
                                     targetRevision:
                                       type: string
                                   required:
@@ -14303,6 +14459,10 @@ spec:
                                         type: string
                                       repoURL:
                                         type: string
+                                      sparsePaths:
+                                        items:
+                                          type: string
+                                        type: array
                                       targetRevision:
                                         type: string
                                     required:
@@ -14693,6 +14853,10 @@ spec:
                                       type: string
                                     repoURL:
                                       type: string
+                                    sparsePaths:
+                                      items:
+                                        type: string
+                                      type: array
                                     targetRevision:
                                       type: string
                                   required:
@@ -14969,6 +15133,10 @@ spec:
                                         type: string
                                       repoURL:
                                         type: string
+                                      sparsePaths:
+                                        items:
+                                          type: string
+                                        type: array
                                       targetRevision:
                                         type: string
                                     required:
@@ -15579,6 +15747,10 @@ spec:
                                       type: string
                                     repoURL:
                                       type: string
+                                    sparsePaths:
+                                      items:
+                                        type: string
+                                      type: array
                                     targetRevision:
                                       type: string
                                   required:
@@ -15855,6 +16027,10 @@ spec:
                                         type: string
                                       repoURL:
                                         type: string
+                                      sparsePaths:
+                                        items:
+                                          type: string
+                                        type: array
                                       targetRevision:
                                         type: string
                                     required:
@@ -16460,6 +16636,10 @@ spec:
                                       type: string
                                     repoURL:
                                       type: string
+                                    sparsePaths:
+                                      items:
+                                        type: string
+                                      type: array
                                     targetRevision:
                                       type: string
                                   required:
@@ -16736,6 +16916,10 @@ spec:
                                         type: string
                                       repoURL:
                                         type: string
+                                      sparsePaths:
+                                        items:
+                                          type: string
+                                        type: array
                                       targetRevision:
                                         type: string
                                     required:
@@ -17211,6 +17395,10 @@ spec:
                             type: string
                           repoURL:
                             type: string
+                          sparsePaths:
+                            items:
+                              type: string
+                            type: array
                           targetRevision:
                             type: string
                         required:
@@ -17487,6 +17675,10 @@ spec:
                               type: string
                             repoURL:
                               type: string
+                            sparsePaths:
+                              items:
+                                type: string
+                              type: array
                             targetRevision:
                               type: string
                           required:

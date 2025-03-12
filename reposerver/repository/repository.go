@@ -2481,6 +2481,101 @@ func (s *Service) checkoutRevision(gitClient git.Client, revision string, submod
 	return closer, err
 }
 
+func checkoutRevision(gitClient git.Client, revision string, submoduleEnabled bool) error {
+	err := gitClient.Init()
+	if err != nil {
+		return status.Errorf(codes.Internal, "Failed to initialize git repo: %v", err)
+	}
+
+	revisionPresent := gitClient.IsRevisionPresent(revision)
+
+	log.WithFields(map[string]any{
+		"skipFetch": revisionPresent,
+	}).Debugf("Checking out revision %v", revision)
+
+	// Fetching can be skipped if the revision is already present locally.
+	if !revisionPresent {
+		// Fetching with no revision first. Fetching with an explicit version can cause repo bloat. https://github.com/argoproj/argo-cd/issues/8845
+		err = gitClient.Fetch("")
+		if err != nil {
+			return status.Errorf(codes.Internal, "Failed to fetch default: %v", err)
+		}
+	}
+
+	_, err = gitClient.Checkout(revision, submoduleEnabled)
+	if err != nil {
+		// When fetching with no revision, only refs/heads/* and refs/remotes/origin/* are fetched. If checkout fails
+		// for the given revision, try explicitly fetching it.
+		log.Infof("Failed to checkout revision %s: %v", revision, err)
+		log.Infof("Fallback to fetching specific revision %s. ref might not have been in the default refspec fetched.", revision)
+
+		err = gitClient.Fetch(revision)
+		if err != nil {
+			return status.Errorf(codes.Internal, "Failed to checkout revision %s: %v", revision, err)
+		}
+
+		_, err = gitClient.Checkout("FETCH_HEAD", submoduleEnabled)
+		if err != nil {
+			return status.Errorf(codes.Internal, "Failed to checkout FETCH_HEAD: %v", err)
+		}
+	}
+
+	return err
+}
+
+// checkoutRevisionWithSparsePaths is a convenience function to initialize a repo, fetch, and checkout a revision with sparse checkout
+func (s *Service) checkoutRevisionWithSparsePaths(gitClient git.Client, revision string, sparsePaths []string, submoduleEnabled bool) (goio.Closer, error) {
+	closer := s.gitRepoInitializer(gitClient.Root())
+	err := checkoutRevisionWithSparsePaths(gitClient, revision, sparsePaths, submoduleEnabled)
+	if err != nil {
+		s.metricsServer.IncGitFetchFail(gitClient.Root(), revision)
+	}
+	return closer, err
+}
+
+func checkoutRevisionWithSparsePaths(gitClient git.Client, revision string, sparsePaths []string, submoduleEnabled bool) error {
+	err := gitClient.Init()
+	if err != nil {
+		return status.Errorf(codes.Internal, "Failed to initialize git repo: %v", err)
+	}
+
+	revisionPresent := gitClient.IsRevisionPresent(revision)
+
+	log.WithFields(map[string]any{
+		"skipFetch":   revisionPresent,
+		"sparsePaths": sparsePaths,
+	}).Debugf("Checking out revision %v with sparse paths", revision)
+
+	// Fetching can be skipped if the revision is already present locally.
+	if !revisionPresent {
+		// Fetching with no revision first. Fetching with an explicit version can cause repo bloat.
+		err = gitClient.Fetch("")
+		if err != nil {
+			return status.Errorf(codes.Internal, "Failed to fetch default: %v", err)
+		}
+	}
+
+	_, err = gitClient.CheckoutWithSparsePaths(revision, sparsePaths, submoduleEnabled)
+	if err != nil {
+		// When fetching with no revision, only refs/heads/* and refs/remotes/origin/* are fetched. If checkout fails
+		// for the given revision, try explicitly fetching it.
+		log.Infof("Failed to checkout revision %s: %v", revision, err)
+		log.Infof("Fallback to fetching specific revision %s. ref might not have been in the default refspec fetched.", revision)
+
+		err = gitClient.Fetch(revision)
+		if err != nil {
+			return status.Errorf(codes.Internal, "Failed to checkout revision %s: %v", revision, err)
+		}
+
+		_, err = gitClient.CheckoutWithSparsePaths("FETCH_HEAD", sparsePaths, submoduleEnabled)
+		if err != nil {
+			return status.Errorf(codes.Internal, "Failed to checkout FETCH_HEAD: %v", err)
+		}
+	}
+
+	return err
+}
+
 // fetch is a convenience function to fetch revisions
 // We assumed that the caller has already initialized the git repo, i.e. gitClient.Init() has been called
 func (s *Service) fetch(gitClient git.Client, targetRevisions []string) error {
@@ -2523,48 +2618,6 @@ func fetch(gitClient git.Client, targetRevisions []string) error {
 		}
 	}
 	return nil
-}
-
-func checkoutRevision(gitClient git.Client, revision string, submoduleEnabled bool) error {
-	err := gitClient.Init()
-	if err != nil {
-		return status.Errorf(codes.Internal, "Failed to initialize git repo: %v", err)
-	}
-
-	revisionPresent := gitClient.IsRevisionPresent(revision)
-
-	log.WithFields(map[string]any{
-		"skipFetch": revisionPresent,
-	}).Debugf("Checking out revision %v", revision)
-
-	// Fetching can be skipped if the revision is already present locally.
-	if !revisionPresent {
-		// Fetching with no revision first. Fetching with an explicit version can cause repo bloat. https://github.com/argoproj/argo-cd/issues/8845
-		err = gitClient.Fetch("")
-		if err != nil {
-			return status.Errorf(codes.Internal, "Failed to fetch default: %v", err)
-		}
-	}
-
-	_, err = gitClient.Checkout(revision, submoduleEnabled)
-	if err != nil {
-		// When fetching with no revision, only refs/heads/* and refs/remotes/origin/* are fetched. If checkout fails
-		// for the given revision, try explicitly fetching it.
-		log.Infof("Failed to checkout revision %s: %v", revision, err)
-		log.Infof("Fallback to fetching specific revision %s. ref might not have been in the default refspec fetched.", revision)
-
-		err = gitClient.Fetch(revision)
-		if err != nil {
-			return status.Errorf(codes.Internal, "Failed to checkout revision %s: %v", revision, err)
-		}
-
-		_, err = gitClient.Checkout("FETCH_HEAD", submoduleEnabled)
-		if err != nil {
-			return status.Errorf(codes.Internal, "Failed to checkout FETCH_HEAD: %v", err)
-		}
-	}
-
-	return err
 }
 
 func (s *Service) GetHelmCharts(_ context.Context, q *apiclient.HelmChartsRequest) (*apiclient.HelmChartsResponse, error) {
@@ -2929,4 +2982,25 @@ func (s *Service) updateCachedRevision(logCtx *log.Entry, oldRev string, newRev 
 
 	logCtx.Debugf("manifest cache updated for application %s in repo %s from revision %s to revision %s", request.AppName, request.GetRepo().Repo, oldRev, newRev)
 	return nil
+}
+
+func (s *Service) GetApp(ctx context.Context, q *apiclient.RepoServerAppDetailsQuery) (*apiclient.RepoAppDetailsResponse, error) {
+
+	gitClient, revision, err := s.newClientResolveRevision(q.Repo, q.Source.TargetRevision, git.WithCache(s.cache, !q.NoCache))
+	if err != nil {
+		return nil, err
+	}
+
+	var closer goio.Closer
+	if q.Source.SparsePaths != nil && len(q.Source.SparsePaths) > 0 {
+		closer, err = s.checkoutRevisionWithSparsePaths(gitClient, revision, q.Source.SparsePaths, s.initConstants.SubmoduleEnabled)
+	} else {
+		closer, err = s.checkoutRevision(gitClient, revision, s.initConstants.SubmoduleEnabled)
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer io.Close(closer)
+
+	return s.GetAppDetails(ctx, q)
 }

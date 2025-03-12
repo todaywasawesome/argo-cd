@@ -39,7 +39,8 @@ const DEFAULT_APP: Partial<models.Application> = {
         source: {
             path: '',
             repoURL: '',
-            targetRevision: 'HEAD'
+            targetRevision: 'HEAD',
+            sparsePaths: []
         },
         sources: [],
         project: ''

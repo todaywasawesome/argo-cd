@@ -126,6 +126,34 @@ func (_m *Client) CheckoutOrOrphan(branch string, submoduleEnabled bool) (string
 	return r0, r1
 }
 
+// CheckoutWithSparsePaths provides a mock function with given fields: revision, sparsePaths, submoduleEnabled
+func (_m *Client) CheckoutWithSparsePaths(revision string, sparsePaths []string, submoduleEnabled bool) (string, error) {
+	ret := _m.Called(revision, sparsePaths, submoduleEnabled)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CheckoutWithSparsePaths")
+	}
+
+	var r0 string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, []string, bool) (string, error)); ok {
+		return rf(revision, sparsePaths, submoduleEnabled)
+	}
+	if rf, ok := ret.Get(0).(func(string, []string, bool) string); ok {
+		r0 = rf(revision, sparsePaths, submoduleEnabled)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	if rf, ok := ret.Get(1).(func(string, []string, bool) error); ok {
+		r1 = rf(revision, sparsePaths, submoduleEnabled)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // CommitAndPush provides a mock function with given fields: branch, message
 func (_m *Client) CommitAndPush(branch string, message string) (string, error) {
 	ret := _m.Called(branch, message)

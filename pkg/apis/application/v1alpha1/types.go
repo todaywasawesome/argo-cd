@@ -198,6 +198,8 @@ type ApplicationSource struct {
 	Ref string `json:"ref,omitempty" protobuf:"bytes,13,opt,name=ref"`
 	// Name is used to refer to a source and is displayed in the UI. It is used in multi-source Applications.
 	Name string `json:"name,omitempty" protobuf:"bytes,14,opt,name=name"`
+	// SparsePaths defines the list of paths to be used for git sparse checkout. Only valid for Git repositories.
+	SparsePaths []string `json:"sparsePaths,omitempty" protobuf:"bytes,15,rep,name=sparsePaths"`
 }
 
 // ApplicationSources contains list of required information about the sources of an application

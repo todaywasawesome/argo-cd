@@ -1046,6 +1046,11 @@ func (in *ApplicationSource) DeepCopyInto(out *ApplicationSource) {
 		*out = new(ApplicationSourcePlugin)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.SparsePaths != nil {
+		in, out := &in.SparsePaths, &out.SparsePaths
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

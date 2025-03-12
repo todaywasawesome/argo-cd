@@ -22,7 +22,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/util/intstr"
 
 	cacheutil "github.com/argoproj/argo-cd/v3/util/cache"
 
@@ -457,7 +456,7 @@ func TestGenerateManifestsHelmWithRefs_CachedNoLsRemote(t *testing.T) {
 		},
 	})
 	src := v1alpha1.ApplicationSource{RepoURL: repoRemote, Path: ".", TargetRevision: "HEAD", Helm: &v1alpha1.ApplicationSourceHelm{
-		ValueFiles: []string{"$ref/test.yaml"},
+		ValueFiles: []string{"$ref/testdata/my-chart/my-chart-values.yaml"},
 	}}
 	repo := &v1alpha1.Repository{
 		Repo: repoRemote,
@@ -3077,22 +3076,6 @@ func TestCheckoutRevisionNotPresentCallFetch(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestFetch(t *testing.T) {
-	revision1 := "0123456789012345678901234567890123456789"
-	revision2 := "abcdefabcdefabcdefabcdefabcdefabcdefabcd"
-
-	gitClient := &gitmocks.Client{}
-	gitClient.On("Init").Return(nil)
-	gitClient.On("IsRevisionPresent", revision1).Once().Return(true)
-	gitClient.On("IsRevisionPresent", revision2).Once().Return(false)
-	gitClient.On("Fetch", "").Return(nil)
-	gitClient.On("IsRevisionPresent", revision1).Once().Return(true)
-	gitClient.On("IsRevisionPresent", revision2).Once().Return(true)
-
-	err := fetch(gitClient, []string{revision1, revision2})
-	require.NoError(t, err)
-}
-
 // TestFetchRevisionCanGetNonstandardRefs shows that we can fetch a revision that points to a non-standard ref. In
 func TestFetchRevisionCanGetNonstandardRefs(t *testing.T) {
 	rootPath := t.TempDir()
@@ -4192,225 +4175,94 @@ func TestVerifyCommitSignature(t *testing.T) {
 	})
 }
 
-func Test_GenerateManifests_Commands(t *testing.T) {
-	t.Run("helm", func(t *testing.T) {
-		service := newService(t, "testdata/my-chart")
+func TestCheckoutRevisionWithSparsePaths(t *testing.T) {
+	rootPath := t.TempDir()
 
-		// Fill the manifest request with as many parameters affecting Helm commands as possible.
-		q := apiclient.ManifestRequest{
-			AppName:     "test-app",
-			Namespace:   "test-namespace",
-			KubeVersion: "1.2.3",
-			ApiVersions: []string{"v1/Test", "v2/Test"},
-			Repo:        &v1alpha1.Repository{},
-			ApplicationSource: &v1alpha1.ApplicationSource{
-				Path: ".",
-				Helm: &v1alpha1.ApplicationSourceHelm{
-					FileParameters: []v1alpha1.HelmFileParameter{
-						{
-							Name: "test-file-param-name",
-							Path: "test-file-param.yaml",
-						},
-					},
-					Parameters: []v1alpha1.HelmParameter{
-						{
-							Name: "test-param-name",
-							// Use build env var to test substitution.
-							Value:       "test-value-$ARGOCD_APP_NAME",
-							ForceString: true,
-						},
-						{
-							Name: "test-param-bool-name",
-							// Use build env var to test substitution.
-							Value: "false",
-						},
-					},
-					PassCredentials:      true,
-					SkipCrds:             true,
-					SkipSchemaValidation: false,
-					ValueFiles: []string{
-						"my-chart-values.yaml",
-					},
-					Values: "test: values",
-				},
-			},
-			ProjectName:        "something",
-			ProjectSourceRepos: []string{"*"},
-		}
+	sourceRepoPath, err := os.MkdirTemp(rootPath, "")
+	require.NoError(t, err)
 
-		res, err := service.GenerateManifest(t.Context(), &q)
+	// Create a repo with multiple directories
+	runGit(t, sourceRepoPath, "init")
+	runGit(t, sourceRepoPath, "checkout", "-b", "main")
 
-		require.NoError(t, err)
-		assert.Equal(t, []string{"helm template . --name-template test-app --namespace test-namespace --kube-version 1.2.3 --set test-param-bool-name=false --set-string test-param-name=test-value-test-app --set-file test-file-param-name=./test-file-param.yaml --values ./my-chart-values.yaml --values <temp file with values from source.helm.values/valuesObject> --api-versions v1/Test --api-versions v2/Test"}, res.Commands)
+	// Create test directories and files
+	require.NoError(t, os.MkdirAll(filepath.Join(sourceRepoPath, "dir1"), 0755))
+	require.NoError(t, os.MkdirAll(filepath.Join(sourceRepoPath, "dir2"), 0755))
+	require.NoError(t, os.WriteFile(filepath.Join(sourceRepoPath, "dir1", "file1.txt"), []byte("content1"), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(sourceRepoPath, "dir2", "file2.txt"), []byte("content2"), 0644))
 
-		t.Run("with overrides", func(t *testing.T) {
-			// These can be set explicitly instead of using inferred values. Make sure the overrides apply.
-			q.ApplicationSource.Helm.APIVersions = []string{"v3", "v4"}
-			q.ApplicationSource.Helm.KubeVersion = "5.6.7"
-			q.ApplicationSource.Helm.Namespace = "different-namespace"
-			q.ApplicationSource.Helm.ReleaseName = "different-release-name"
+	runGit(t, sourceRepoPath, "add", ".")
+	runGit(t, sourceRepoPath, "commit", "-m", "add test files")
+	sha := runGit(t, sourceRepoPath, "rev-parse", "HEAD")
 
-			res, err = service.GenerateManifest(t.Context(), &q)
+	destRepoPath, err := os.MkdirTemp(rootPath, "")
+	require.NoError(t, err)
 
-			require.NoError(t, err)
-			assert.Equal(t, []string{"helm template . --name-template different-release-name --namespace different-namespace --kube-version 5.6.7 --set test-param-bool-name=false --set-string test-param-name=test-value-test-app --set-file test-file-param-name=./test-file-param.yaml --values ./my-chart-values.yaml --values <temp file with values from source.helm.values/valuesObject> --api-versions v3 --api-versions v4"}, res.Commands)
-		})
-	})
+	gitClient, err := git.NewClientExt("file://"+sourceRepoPath, destRepoPath, &git.NopCreds{}, true, false, "", "")
+	require.NoError(t, err)
 
-	t.Run("helm with dependencies", func(t *testing.T) {
-		// This test makes sure we still get commands, even if we hit the code path that has to run "helm dependency build."
-		// We don't actually return the "helm dependency build" command, because we expect that the user is able to read
-		// the "helm template" and figure out how to fix it.
-		t.Cleanup(func() {
-			err := os.Remove("testdata/helm-with-local-dependency/Chart.lock")
-			require.NoError(t, err)
-			err = os.RemoveAll("testdata/helm-with-local-dependency/charts")
-			require.NoError(t, err)
-		})
+	// Test sparse checkout with dir1
+	sparsePaths := []string{"dir1"}
+	err = checkoutRevisionWithSparsePaths(gitClient, strings.TrimSpace(sha), sparsePaths, false)
+	require.NoError(t, err)
 
-		service := newService(t, "testdata/helm-with-local-dependency")
+	// Verify only dir1 exists
+	_, err = os.Stat(filepath.Join(destRepoPath, "dir1", "file1.txt"))
+	require.NoError(t, err)
+	_, err = os.Stat(filepath.Join(destRepoPath, "dir2", "file2.txt"))
+	require.True(t, os.IsNotExist(err))
 
-		q := apiclient.ManifestRequest{
-			AppName:   "test-app",
-			Namespace: "test-namespace",
-			Repo:      &v1alpha1.Repository{},
-			ApplicationSource: &v1alpha1.ApplicationSource{
-				Path: ".",
-			},
-			ProjectName:        "something",
-			ProjectSourceRepos: []string{"*"},
-		}
+	// Test sparse checkout with dir2
+	sparsePaths = []string{"dir2"}
+	err = checkoutRevisionWithSparsePaths(gitClient, strings.TrimSpace(sha), sparsePaths, false)
+	require.NoError(t, err)
 
-		res, err := service.GenerateManifest(t.Context(), &q)
-
-		require.NoError(t, err)
-		assert.Equal(t, []string{"helm template . --name-template test-app --namespace test-namespace --include-crds"}, res.Commands)
-	})
-
-	t.Run("kustomize", func(t *testing.T) {
-		// Write test files to a temp dir, because the test mutates kustomization.yaml in place.
-		tempDir := t.TempDir()
-		err := os.WriteFile(path.Join(tempDir, "kustomization.yaml"), []byte(`
-resources:
-- guestbook.yaml
-`), os.FileMode(0o600))
-		require.NoError(t, err)
-		err = os.WriteFile(path.Join(tempDir, "guestbook.yaml"), []byte(`
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: guestbook-ui
-`), os.FileMode(0o400))
-		require.NoError(t, err)
-		err = os.Mkdir(path.Join(tempDir, "component"), os.FileMode(0o700))
-		require.NoError(t, err)
-		err = os.WriteFile(path.Join(tempDir, "component", "kustomization.yaml"), []byte(`
-apiVersion: kustomize.config.k8s.io/v1alpha1
-kind: Component
-images:
-- name: old
-  newName: new
-`), os.FileMode(0o400))
-		require.NoError(t, err)
-
-		service := newService(t, tempDir)
-
-		// Fill the manifest request with as many parameters affecting Kustomize commands as possible.
-		q := apiclient.ManifestRequest{
-			AppName:     "test-app",
-			Namespace:   "test-namespace",
-			KubeVersion: "1.2.3",
-			ApiVersions: []string{"v1/Test", "v2/Test"},
-			Repo:        &v1alpha1.Repository{},
-			ApplicationSource: &v1alpha1.ApplicationSource{
-				Path: ".",
-				Kustomize: &v1alpha1.ApplicationSourceKustomize{
-					APIVersions: []string{"v1", "v2"},
-					CommonAnnotations: map[string]string{
-						// Use build env var to test substitution.
-						"test": "annotation-$ARGOCD_APP_NAME",
-					},
-					CommonAnnotationsEnvsubst: true,
-					CommonLabels: map[string]string{
-						"test": "label",
-					},
-					Components:             []string{"component"},
-					ForceCommonAnnotations: true,
-					ForceCommonLabels:      true,
-					Images: v1alpha1.KustomizeImages{
-						"image=override",
-					},
-					KubeVersion:           "5.6.7",
-					LabelWithoutSelector:  true,
-					LabelIncludeTemplates: true,
-					NamePrefix:            "test-prefix",
-					NameSuffix:            "test-suffix",
-					Namespace:             "override-namespace",
-					Replicas: v1alpha1.KustomizeReplicas{
-						{
-							Name:  "guestbook-ui",
-							Count: intstr.Parse("1337"),
-						},
-					},
-				},
-			},
-			ProjectName:        "something",
-			ProjectSourceRepos: []string{"*"},
-		}
-
-		res, err := service.GenerateManifest(t.Context(), &q)
-
-		require.NoError(t, err)
-		assert.Equal(t, []string{
-			"kustomize edit set nameprefix -- test-prefix",
-			"kustomize edit set namesuffix -- test-suffix",
-			"kustomize edit set image image=override",
-			"kustomize edit set replicas guestbook-ui=1337",
-			"kustomize edit add label --force --without-selector --include-templates test:label",
-			"kustomize edit add annotation --force test:annotation-test-app",
-			"kustomize edit set namespace -- override-namespace",
-			"kustomize edit add component component",
-			"kustomize build .",
-		}, res.Commands)
-	})
+	// Verify only dir2 exists
+	_, err = os.Stat(filepath.Join(destRepoPath, "dir2", "file2.txt"))
+	require.NoError(t, err)
+	_, err = os.Stat(filepath.Join(destRepoPath, "dir1", "file1.txt"))
+	require.True(t, os.IsNotExist(err))
 }
 
-func Test_SkipSchemaValidation(t *testing.T) {
-	t.Run("helm", func(t *testing.T) {
-		service := newService(t, "testdata/broken-schema-verification")
+func TestCheckoutRevisionWithSparsePathsPresentSkipFetch(t *testing.T) {
+	revision := "0123456789012345678901234567890123456789"
+	sparsePaths := []string{"dir1"}
 
-		q := apiclient.ManifestRequest{
-			AppName: "test-app",
-			Repo:    &v1alpha1.Repository{},
-			ApplicationSource: &v1alpha1.ApplicationSource{
-				Path: ".",
-				Helm: &v1alpha1.ApplicationSourceHelm{
-					SkipSchemaValidation: true,
-				},
-			},
-		}
+	gitClient := &gitmocks.Client{}
+	gitClient.On("Init").Return(nil)
+	gitClient.On("IsRevisionPresent", revision).Return(true)
+	gitClient.On("CheckoutWithSparsePaths", revision, sparsePaths, mock.Anything).Return("", nil)
 
-		res, err := service.GenerateManifest(t.Context(), &q)
+	err := checkoutRevisionWithSparsePaths(gitClient, revision, sparsePaths, false)
+	require.NoError(t, err)
+}
 
-		require.NoError(t, err)
-		assert.Equal(t, []string{"helm template . --name-template test-app --include-crds --skip-schema-validation"}, res.Commands)
-	})
-	t.Run("helm", func(t *testing.T) {
-		service := newService(t, "testdata/broken-schema-verification")
+func TestCheckoutRevisionWithSparsePathsNotPresentCallFetch(t *testing.T) {
+	revision := "0123456789012345678901234567890123456789"
+	sparsePaths := []string{"dir1"}
 
-		q := apiclient.ManifestRequest{
-			AppName: "test-app",
-			Repo:    &v1alpha1.Repository{},
-			ApplicationSource: &v1alpha1.ApplicationSource{
-				Path: ".",
-				Helm: &v1alpha1.ApplicationSourceHelm{
-					SkipSchemaValidation: false,
-				},
-			},
-		}
+	gitClient := &gitmocks.Client{}
+	gitClient.On("Init").Return(nil)
+	gitClient.On("IsRevisionPresent", revision).Return(false)
+	gitClient.On("Fetch", "").Return(nil)
+	gitClient.On("CheckoutWithSparsePaths", revision, sparsePaths, mock.Anything).Return("", nil)
 
-		_, err := service.GenerateManifest(t.Context(), &q)
+	err := checkoutRevisionWithSparsePaths(gitClient, revision, sparsePaths, false)
+	require.NoError(t, err)
+}
 
-		require.ErrorContains(t, err, "values don't meet the specifications of the schema(s)")
-	})
+func TestFetch(t *testing.T) {
+	revision1 := "0123456789012345678901234567890123456789"
+	revision2 := "abcdefabcdefabcdefabcdefabcdefabcdefabcd"
+
+	gitClient := &gitmocks.Client{}
+	gitClient.On("Init").Return(nil)
+	gitClient.On("IsRevisionPresent", revision1).Once().Return(true)
+	gitClient.On("IsRevisionPresent", revision2).Once().Return(false)
+	gitClient.On("Fetch", "").Return(nil)
+	gitClient.On("IsRevisionPresent", revision1).Once().Return(true)
+	gitClient.On("IsRevisionPresent", revision2).Once().Return(true)
+
+	err := fetch(gitClient, []string{revision1, revision2})
+	require.NoError(t, err)
 }

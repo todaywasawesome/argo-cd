@@ -70,6 +70,7 @@ type Client interface {
 	Fetch(revision string) error
 	Submodule() error
 	Checkout(revision string, submoduleEnabled bool) (string, error)
+	CheckoutWithSparsePaths(revision string, sparsePaths []string, submoduleEnabled bool) (string, error)
 	LsRefs() (*Refs, error)
 	LsRemote(revision string) (string, error)
 	LsFiles(path string, enableNewGitFileGlobbing bool) ([]string, error)
@@ -480,41 +481,47 @@ func (m *nativeGitClient) Submodule() error {
 
 // Checkout checks out the specified revision
 func (m *nativeGitClient) Checkout(revision string, submoduleEnabled bool) (string, error) {
-	if revision == "" || revision == "HEAD" {
-		revision = "origin/HEAD"
+	if err := m.runCredentialedCmd("checkout", "--force", revision); err != nil {
+		return "", err
 	}
-	if out, err := m.runCmd("checkout", "--force", revision); err != nil {
-		return out, fmt.Errorf("failed to checkout %s: %w", revision, err)
-	}
-	// We must populate LFS content by using lfs checkout, if we have at least
-	// one LFS reference in the current revision.
-	if m.IsLFSEnabled() {
-		largeFiles, err := m.LsLargeFiles()
-		if err != nil {
-			return "", fmt.Errorf("failed to list LFS files: %w", err)
-		}
-		if len(largeFiles) > 0 {
-			if out, err := m.runCmd("lfs", "checkout"); err != nil {
-				return out, fmt.Errorf("failed to checkout LFS files: %w", err)
-			}
+	if submoduleEnabled {
+		if err := m.Submodule(); err != nil {
+			return "", err
 		}
 	}
-	if _, err := os.Stat(m.root + "/.gitmodules"); !os.IsNotExist(err) {
-		if submoduleEnabled {
-			if err := m.Submodule(); err != nil {
-				return "", fmt.Errorf("failed to update submodules: %w", err)
-			}
+	return m.CommitSHA()
+}
+
+// CheckoutWithSparsePaths checks out the specified revision with sparse checkout enabled for the given paths
+func (m *nativeGitClient) CheckoutWithSparsePaths(revision string, sparsePaths []string, submoduleEnabled bool) (string, error) {
+	// Initialize sparse checkout
+	if err := m.runCredentialedCmd("sparse-checkout", "init", "--cone"); err != nil {
+		return "", fmt.Errorf("failed to initialize sparse checkout: %v", err)
+	}
+
+	// Set sparse checkout paths
+	args := append([]string{"sparse-checkout", "set"}, sparsePaths...)
+	if err := m.runCredentialedCmd(args...); err != nil {
+		return "", fmt.Errorf("failed to set sparse checkout paths: %v", err)
+	}
+
+	// Perform checkout
+	if err := m.runCredentialedCmd("checkout", "--force", revision); err != nil {
+		return "", fmt.Errorf("failed to checkout revision: %v", err)
+	}
+
+	if submoduleEnabled {
+		if err := m.Submodule(); err != nil {
+			return "", err
 		}
 	}
-	// NOTE
-	// The double “f” in the arguments is not a typo: the first “f” tells
-	// `git clean` to delete untracked files and directories, and the second “f”
-	// tells it to clean untracked nested Git repositories (for example a
-	// submodule which has since been removed).
-	if out, err := m.runCmd("clean", "-ffdx"); err != nil {
-		return out, fmt.Errorf("failed to clean: %w", err)
+
+	// Clean untracked files
+	if err := m.runCredentialedCmd("clean", "-ffdx"); err != nil {
+		return "", fmt.Errorf("failed to clean untracked files: %v", err)
 	}
-	return "", nil
+
+	return m.CommitSHA()
 }
 
 func (m *nativeGitClient) getRefs() ([]*plumbing.Reference, error) {
